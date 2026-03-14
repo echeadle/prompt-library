@@ -3,6 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createDatabase } from './db.js';
+import { createCategoriesRouter } from './routes/categories.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -19,6 +20,9 @@ export const db = createDatabase();
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
+
+// API routes
+app.use('/api/categories', createCategoriesRouter(db));
 
 // Serve static files in production
 const distPath = path.join(__dirname, '..', 'dist');
