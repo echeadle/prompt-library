@@ -1,0 +1,6 @@
+I want to create an AI Prompt library app. A local web app, I can save,
+organize, tab and search my best AI prompts. After creating the plan, stop, and write the PRD.md We 
+will review the plan, make any changes and then after we have agreed on a plan we will write the code.
+
+Interview me in detail using the ask user question tool about technical implementations, UX/UI concerns
+and tradeoffs. Ask me one question at a time. 
