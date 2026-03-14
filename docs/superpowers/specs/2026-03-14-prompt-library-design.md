@@ -107,8 +107,9 @@ prompt-library/
 | | | PRIMARY KEY (prompt_id, tag_id) |
 
 **prompts_fts** (FTS5 virtual table)
-- Indexes: title, content, description
+- Indexes: title, content, description, tags (space-separated tag names denormalized into the FTS row)
 - Kept in sync via triggers on prompts insert/update/delete
+- Tag text is denormalized into FTS on insert/update so full-text search covers tags too
 
 ### Seed Data
 
@@ -142,7 +143,7 @@ prompt-library/
 | GET | /api/tags | List all tags |
 | POST | /api/tags | Create tag |
 | DELETE | /api/tags/:id | Delete tag |
-| GET | /api/export | Export prompts as JSON |
+| GET | /api/export | Export prompts as JSON (accepts same filter params as GET /api/prompts) |
 | POST | /api/import | Import prompts from JSON (merge/append) |
 
 ### GET /api/prompts Query Params
@@ -153,7 +154,7 @@ prompt-library/
 | category | number | Filter by category_id |
 | tag | number | Filter by tag_id |
 | favorite | boolean | Filter favorites only |
-| sort | string | created_at, updated_at, title |
+| sort | string | created_at, updated_at, title, is_favorite |
 | order | string | asc, desc |
 
 Filters combine with AND logic. FTS query uses `MATCH` against `prompts_fts`.
@@ -189,9 +190,9 @@ Each card displays:
 
 ### Slide-Out Panel
 
-Opens from the right (420px width), list remains visible with dimmed overlay. Three modes sharing the same component:
+Opens from the right (420px width), list remains visible with dimmed overlay. On small screens (<768px), the panel expands to full width. Three modes sharing the same component:
 
-**View mode**: Read-only display with Edit, Copy, Delete action buttons in header. Prompt content in a styled box with its own Copy button. Shows description, tags, timestamps.
+**View mode**: Read-only display with Edit, Copy, Delete action buttons in header. Delete shows a confirmation dialog before executing. Prompt content in a styled box with its own Copy button (uses `navigator.clipboard.writeText`, shows success toast). Shows description, tags, timestamps.
 
 **Edit mode**: Fields become inputs/textareas. Tag field becomes TagComboInput. Save/Cancel buttons replace action bar.
 
@@ -234,7 +235,7 @@ App
 - `searchQuery: string`
 - `favoritesOnly: boolean`
 - `viewMode: 'grid' | 'list'`
-- `sortField: 'created_at' | 'updated_at' | 'title'`
+- `sortField: 'created_at' | 'updated_at' | 'title' | 'is_favorite'`
 - `sortOrder: 'asc' | 'desc'`
 - `slideOut: { open: boolean; mode: 'view' | 'edit' | 'create'; promptId?: number }`
 
