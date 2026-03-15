@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { AppProvider } from './context/AppContext';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
+import PromptGrid from './components/PromptGrid';
 
 const queryClient = new QueryClient();
 
@@ -14,8 +15,8 @@ export default function App() {
           <Sidebar />
           <div className="flex-1 flex flex-col">
             <TopBar />
-            <main className="flex-1 overflow-y-auto p-5 text-slate-400">
-              Cards go here
+            <main className="flex-1 overflow-y-auto">
+              <PromptGrid />
             </main>
           </div>
         </div>

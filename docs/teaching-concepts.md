@@ -145,3 +145,27 @@ The search input keeps its own `useState` (`localSearch`) separate from the glob
 ### 3. Flexbox Layout Composition
 
 The App layout uses nested flexbox: the outer `flex` puts Sidebar and content side-by-side, the inner `flex-col` stacks TopBar and main content vertically. `flex-1` makes elements fill remaining space. `overflow-y-auto` on `<main>` means only the content area scrolls — the sidebar and top bar stay fixed. This is the standard "dashboard layout" pattern.
+
+---
+
+## Task 15: PromptCard & PromptGrid (`client/src/components/`)
+
+### 1. Event Propagation Control (`stopPropagation`)
+
+The whole card is clickable (opens detail view), but the favorite star button lives inside the card. Without `e.stopPropagation()`, clicking the star would also trigger the card's `onClick`. `stopPropagation` stops the event from "bubbling up" to parent elements — a fundamental DOM concept you'll use whenever interactive elements are nested.
+
+### 2. CSS `line-clamp` for Text Truncation
+
+`line-clamp-2` limits the content preview to exactly 2 lines with an ellipsis. Under the hood, it uses `-webkit-line-clamp` with `overflow: hidden`. This is much cleaner than JavaScript-based truncation and handles variable-width text correctly.
+
+### 3. Hex Color Opacity Trick
+
+`prompt.category.color + '20'` appends `20` to a hex color like `#3b82f6`, making it `#3b82f620`. In 8-digit hex, the last two digits are opacity (00=transparent, FF=opaque). `20` is about 12.5% opacity — creating a subtle tinted background from any color without needing rgba() conversion.
+
+### 4. Responsive CSS Grid with `auto-fill` and `minmax`
+
+`grid-cols-[repeat(auto-fill,minmax(280px,1fr))]` is a powerful one-liner: create as many columns as fit, each at least 280px wide, growing equally to fill space. On a wide screen you get 4 columns; on a narrow screen, 1. No media queries needed — the grid adapts automatically.
+
+### 5. Conditional Object Spread for Filters
+
+`...(searchQuery && { q: searchQuery })` only adds the `q` property to the filters object when `searchQuery` is truthy. This is cleaner than building the object with `if` statements and avoids sending empty filter params to the API.
