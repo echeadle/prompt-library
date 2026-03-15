@@ -129,3 +129,19 @@ Category colors come from the database, so they can't be Tailwind classes (Tailw
 ### 3. Toggle Selection Pattern
 
 Categories toggle: clicking the already-selected category deselects it (`cat.id === selectedCategory ? null : cat.id`). Tags use array add/remove. These are common UI patterns — single-select toggle vs multi-select toggle.
+
+---
+
+## Task 14: TopBar Component (`client/src/components/TopBar.tsx`)
+
+### 1. Debouncing User Input
+
+Typing in the search box updates `localSearch` instantly (responsive UI), but the actual API search (`setSearchQuery`) only fires after 300ms of inactivity. The `useEffect` cleanup function (`return () => clearTimeout(timer)`) cancels pending timers when the input changes. Without debouncing, every keystroke would trigger a network request — wasteful and potentially causing UI flicker as results flash in and out.
+
+### 2. Local State Synced to Global State
+
+The search input keeps its own `useState` (`localSearch`) separate from the global `searchQuery` in AppContext. This is a common pattern when you need immediate UI responsiveness but delayed side effects. The local state updates on every keystroke (so the input feels snappy), while the global state only updates after debouncing (so the API isn't hammered).
+
+### 3. Flexbox Layout Composition
+
+The App layout uses nested flexbox: the outer `flex` puts Sidebar and content side-by-side, the inner `flex-col` stacks TopBar and main content vertically. `flex-1` makes elements fill remaining space. `overflow-y-auto` on `<main>` means only the content area scrolls — the sidebar and top bar stay fixed. This is the standard "dashboard layout" pattern.
