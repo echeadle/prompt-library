@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import Database from 'better-sqlite3';
+import { createProvider } from '../ai/index.js';
+import { buildSystemPrompt } from '../ai/systemPrompts.js';
 
 const DEFAULTS: Record<string, string> = {
   ai_provider: 'anthropic',
@@ -40,6 +42,56 @@ export function createAIRouter(db: Database.Database): Router {
     if (model) setSetting(db, 'ai_model', model);
 
     res.json({ success: true });
+  });
+
+  // POST /api/ai/chat — SSE streaming
+  router.post('/chat', async (req, res) => {
+    const { messages, mode, context } = req.body;
+
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ error: 'messages array is required' });
+    }
+    if (!mode || !['generate', 'review'].includes(mode)) {
+      return res.status(400).json({ error: 'mode must be "generate" or "review"' });
+    }
+
+    const provider = getSetting(db, 'ai_provider');
+    const apiKey = getSetting(db, 'ai_api_key');
+    const model = getSetting(db, 'ai_model');
+
+    if (!apiKey) {
+      return res.status(400).json({ error: 'No API key configured. Please set one in Settings.' });
+    }
+
+    const systemPrompt = buildSystemPrompt(mode, context);
+
+    // Set up SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    try {
+      const ai = createProvider(provider, apiKey, model);
+      await ai.chat({
+        messages,
+        systemPrompt,
+        onToken: (token) => {
+          res.write(`data: ${JSON.stringify({ type: 'token', content: token })}\n\n`);
+        },
+        onDone: () => {
+          res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+          res.end();
+        },
+        onError: (error) => {
+          res.write(`data: ${JSON.stringify({ type: 'error', content: error })}\n\n`);
+          res.end();
+        },
+      });
+    } catch (err) {
+      res.write(`data: ${JSON.stringify({ type: 'error', content: err instanceof Error ? err.message : 'Unknown error' })}\n\n`);
+      res.end();
+    }
   });
 
   return router;
