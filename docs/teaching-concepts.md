@@ -85,3 +85,31 @@ Instead of calling `fetch('/api/prompts')` directly in every React component, we
 ### 3. URLSearchParams for Query Strings
 
 Instead of manually building `?q=python&category=2`, we use the built-in `URLSearchParams` API. It handles encoding special characters (spaces, ampersands) correctly and only includes params that are actually set — no manual `if` chains to build the string.
+
+---
+
+## Task 12: React Query Hooks & App Context
+
+### 1. Server State vs UI State
+
+This app splits state into two categories managed by different tools:
+- **Server state** (React Query) — data from the API: prompts, categories, tags. Needs fetching, caching, re-fetching, and error handling.
+- **UI state** (React Context) — purely local: which category is selected, search query, view mode. Never sent to the server.
+
+This separation prevents the common mistake of storing server data in `useState` and manually keeping it in sync.
+
+### 2. Query Keys and Cache Invalidation
+
+React Query caches data by a `queryKey` like `['prompts', { category: 2 }]`. When a mutation succeeds (e.g., creating a prompt), we call `invalidateQueries({ queryKey: ['prompts'] })` — this tells React Query "all queries starting with 'prompts' are stale, re-fetch them." The UI updates automatically without manually updating arrays in state.
+
+### 3. The `enabled` Option
+
+`usePrompt(id)` passes `enabled: !!id` — this tells React Query "don't run this query if `id` is undefined." This is how you handle conditional fetching: the hook exists and is always called (React rules of hooks), but the fetch only fires when there's actually an ID to look up.
+
+### 4. Provider Pattern
+
+The app wraps everything in nested providers: `QueryClientProvider > AppProvider > components`. This is the **provider pattern** — it makes data available to any component in the tree without passing props through intermediaries. `useAppContext()` throws an error if called outside the provider, which catches wiring bugs early.
+
+### 5. Context with Multiple `useState` Calls
+
+`AppContext` manages 7+ pieces of state with individual `useState` calls rather than a single `useReducer`. This is fine for simple state where each piece changes independently. If the state transitions became complex (e.g., "selecting a category should also clear the search"), `useReducer` would be better — but here, simplicity wins.
