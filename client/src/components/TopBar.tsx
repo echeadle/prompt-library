@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAppContext } from '../context/AppContext';
+import { exportPrompts, importPrompts } from '../api/prompts';
+import toast from 'react-hot-toast';
 
 export default function TopBar() {
   const {
     searchQuery, setSearchQuery,
+    selectedCategory,
+    favoritesOnly,
     viewMode, setViewMode,
     sortField, setSortField,
     sortOrder, setSortOrder,
     openSlideOut,
   } = useAppContext();
+  const queryClient = useQueryClient();
 
   const [localSearch, setLocalSearch] = useState(searchQuery);
 
@@ -17,6 +23,48 @@ export default function TopBar() {
     const timer = setTimeout(() => setSearchQuery(localSearch), 300);
     return () => clearTimeout(timer);
   }, [localSearch, setSearchQuery]);
+
+  const handleExport = async () => {
+    try {
+      const data = await exportPrompts({
+        ...(searchQuery && { q: searchQuery }),
+        ...(selectedCategory && { category: selectedCategory }),
+        ...(favoritesOnly && { favorite: true }),
+      });
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'prompts-export.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${data.prompts.length} prompts`);
+    } catch {
+      toast.error('Export failed');
+    }
+  };
+
+  const handleImport = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        const result = await importPrompts(data);
+        toast.success(`Imported ${result.imported}, skipped ${result.skipped}`);
+        queryClient.invalidateQueries({ queryKey: ['prompts'] });
+        queryClient.invalidateQueries({ queryKey: ['categories'] });
+        queryClient.invalidateQueries({ queryKey: ['tags'] });
+      } catch {
+        toast.error('Import failed — check file format');
+      }
+    };
+    input.click();
+  };
 
   return (
     <div className="px-5 py-3 border-b border-slate-200 flex items-center gap-3">
@@ -68,6 +116,14 @@ export default function TopBar() {
           {sortOrder === 'asc' ? '↑' : '↓'}
         </button>
       </div>
+
+      {/* Import/Export */}
+      <button onClick={handleExport} className="px-3 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
+        Export
+      </button>
+      <button onClick={handleImport} className="px-3 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
+        Import
+      </button>
 
       {/* New Prompt */}
       <button

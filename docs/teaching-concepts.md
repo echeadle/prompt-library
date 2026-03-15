@@ -237,3 +237,19 @@ The slide-out uses two overlapping fixed elements: a backdrop (`z-40`) and the p
 ### 4. Conditional Rendering with Early Return
 
 `if (!slideOut.open) return null` — when the panel is closed, the component renders nothing. No hidden DOM, no CSS `display: none`. React simply unmounts the entire subtree. This is cleaner than toggling visibility and ensures no unnecessary API calls (since `usePrompt` won't fire without an ID).
+
+---
+
+## Task 20: Import/Export UI (`client/src/components/TopBar.tsx`)
+
+### 1. Programmatic File Download with Blob + createObjectURL
+
+To trigger a file download without a server endpoint that returns a file, we: (1) create a `Blob` from JSON text, (2) generate a temporary URL with `URL.createObjectURL()`, (3) create an invisible `<a>` element with `download` attribute, (4) `.click()` it programmatically, (5) clean up with `URL.revokeObjectURL()`. This pattern lets you generate and download files entirely client-side.
+
+### 2. Programmatic File Upload with Hidden Input
+
+Instead of showing an ugly `<input type="file">`, we create one in JavaScript, set `accept=".json"` to filter the file picker, and `.click()` it to open the dialog. The `onchange` handler reads the file with `file.text()` (returns a Promise), parses the JSON, and sends it to the API. The input element is never added to the DOM — it's garbage collected after use.
+
+### 3. Cache Invalidation After Import
+
+After importing, we invalidate `prompts`, `categories`, and `tags` queries — because the import may have created new categories and tags. This is a good example of thinking about side effects: importing prompts doesn't just affect the prompts list, it can affect the entire sidebar.
