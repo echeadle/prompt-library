@@ -217,3 +217,23 @@ By default, HTML collapses all whitespace (newlines, tabs, multiple spaces) into
 ### 3. Callback Props for Separation of Concerns
 
 PromptView doesn't handle mutations (edit, delete). It receives `onEdit` and `onDelete` callbacks and just calls them when the user acts. The parent component (PromptSlideOut, coming next) handles the actual API calls. This keeps PromptView a pure display component — easier to test and reason about.
+
+---
+
+## Task 19: PromptSlideOut (`client/src/components/PromptSlideOut.tsx`)
+
+### 1. Container/Presentational Pattern
+
+PromptSlideOut is a **container** — it owns all the logic (mutations, mode switching, toast messages) but renders no UI of its own. It delegates rendering to **presentational** components (PromptView, PromptForm) that are pure display. This separation means you can change the panel's look without touching logic, or change logic without touching layout.
+
+### 2. Inline Mutation Callbacks (`onSuccess`/`onError`)
+
+Instead of defining success/error handling in the hook definitions, we pass callbacks inline: `createPrompt.mutate(data, { onSuccess: () => {...} })`. This lets the same hook produce different side effects in different contexts — the hook stays generic, the caller decides what happens.
+
+### 3. Backdrop and Z-Index Layering
+
+The slide-out uses two overlapping fixed elements: a backdrop (`z-40`) and the panel (`z-50`). The backdrop covers the full screen with `fixed inset-0` (shorthand for top/right/bottom/left all 0). Clicking the backdrop calls `closeSlideOut`. The panel sits on top because of higher z-index.
+
+### 4. Conditional Rendering with Early Return
+
+`if (!slideOut.open) return null` — when the panel is closed, the component renders nothing. No hidden DOM, no CSS `display: none`. React simply unmounts the entire subtree. This is cleaner than toggling visibility and ensures no unnecessary API calls (since `usePrompt` won't fire without an ID).

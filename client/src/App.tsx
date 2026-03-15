@@ -4,6 +4,7 @@ import { AppProvider } from './context/AppContext';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import PromptGrid from './components/PromptGrid';
+import PromptSlideOut from './components/PromptSlideOut';
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ export default function App() {
             </main>
           </div>
         </div>
+        <PromptSlideOut />
         <Toaster position="bottom-right" />
       </AppProvider>
     </QueryClientProvider>
