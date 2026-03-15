@@ -13,6 +13,7 @@ export default function TopBar() {
     sortField, setSortField,
     sortOrder, setSortOrder,
     openSlideOut,
+    openAIModal,
   } = useAppContext();
   const queryClient = useQueryClient();
 
@@ -123,6 +124,14 @@ export default function TopBar() {
       </button>
       <button onClick={handleImport} className="px-3 py-2 border border-slate-200 rounded-lg text-sm hover:bg-slate-50">
         Import
+      </button>
+
+      {/* AI Assistant */}
+      <button
+        onClick={() => openAIModal('generate')}
+        className="px-3 py-2 border border-indigo-200 text-indigo-600 rounded-lg text-sm hover:bg-indigo-50 font-medium"
+      >
+        &#x2728; AI
       </button>
 
       {/* New Prompt */}

@@ -1,5 +1,6 @@
 import toast from 'react-hot-toast';
 import TagBadge from './TagBadge';
+import { useAppContext } from '../context/AppContext';
 import type { Prompt } from '../types';
 
 interface Props {
@@ -9,6 +10,8 @@ interface Props {
 }
 
 export default function PromptView({ prompt, onEdit, onDelete }: Props) {
+  const { openAIModal } = useAppContext();
+
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(prompt.content);
@@ -40,6 +43,12 @@ export default function PromptView({ prompt, onEdit, onDelete }: Props) {
             className="px-3 py-1.5 border border-slate-200 text-indigo-600 rounded-md text-xs hover:bg-slate-50"
           >
             Copy
+          </button>
+          <button
+            onClick={() => openAIModal('review', prompt.id)}
+            className="px-3 py-1.5 border border-indigo-200 text-indigo-600 rounded-md text-xs hover:bg-indigo-50"
+          >
+            &#x2728; Review with AI
           </button>
           <button
             onClick={handleDelete}
