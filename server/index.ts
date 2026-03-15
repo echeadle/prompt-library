@@ -6,6 +6,7 @@ import { createDatabase } from './db.js';
 import { createCategoriesRouter } from './routes/categories.js';
 import { createTagsRouter } from './routes/tags.js';
 import { createPromptsRouter } from './routes/prompts.js';
+import { createImportExportRouter } from './routes/importExport.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -27,6 +28,7 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/categories', createCategoriesRouter(db));
 app.use('/api/tags', createTagsRouter(db));
 app.use('/api/prompts', createPromptsRouter(db));
+app.use('/api', createImportExportRouter(db));
 
 // Serve static files in production
 const distPath = path.join(__dirname, '..', 'dist');

@@ -29,3 +29,27 @@ Create and update use `db.transaction()` to wrap multiple SQL statements. This e
 ### 6. COALESCE for Partial Updates
 
 The PUT endpoint uses `COALESCE(?, existing_column)` in the UPDATE statement. This means: "use the new value if provided, otherwise keep the old value." It allows partial updates — you can send just `{ is_favorite: 1 }` without needing to resend the title, content, etc.
+
+---
+
+## Task 8: Import/Export API (`server/routes/importExport.ts`)
+
+### 1. Portable Data Formats (IDs vs Names)
+
+The export endpoint converts internal database IDs into human-readable names. Instead of `category_id: 2`, the JSON says `category: "Coding"`. This makes the export file **database-independent** — you could import it into a completely different database and it would still work, because the import endpoint looks up (or creates) categories by name.
+
+### 2. Duplicate Detection on Import
+
+The import endpoint checks `SELECT id FROM prompts WHERE title = ?` before inserting. If a match exists, it increments `skipped` and moves on. This is a simple deduplication strategy — it means you can safely import the same file twice without creating duplicates. The tradeoff: if you intentionally want two prompts with the same title, you'd need to rename one first.
+
+### 3. Auto-Creating Categories on Import
+
+When importing a prompt with `category: "Custom Category"`, the import checks if that category exists. If not, it creates one with a default gray color (`#94a3b8`). This makes imports self-contained — the JSON file doesn't need to include a separate categories section.
+
+### 4. INSERT OR IGNORE for Junction Tables
+
+Tag associations use `INSERT OR IGNORE INTO prompt_tags` instead of plain `INSERT`. Since `(prompt_id, tag_id)` is a primary key, a duplicate insert would normally throw an error. `OR IGNORE` silently skips duplicates. This is a defensive pattern that's useful when you can't guarantee uniqueness in your input data.
+
+### 5. Transactional Batch Operations
+
+The entire import is wrapped in `db.transaction()`. If importing 100 prompts and #50 fails, all 100 are rolled back — you won't end up with a half-imported dataset. Transactions also dramatically improve SQLite write performance for batch inserts (each individual insert would otherwise trigger a disk sync).
