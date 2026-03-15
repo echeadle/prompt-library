@@ -185,3 +185,19 @@ This is a classic UI challenge: clicking a dropdown item triggers `onBlur` on th
 ### 3. Controlled Component Pattern
 
 The parent owns the data via `value`/`onChange` props — TagComboInput doesn't store the tag list internally. This makes the component reusable: the parent decides what happens when tags change (e.g., updating form state). The component only manages its own transient UI state (the text input and dropdown visibility).
+
+---
+
+## Task 17: PromptForm (`client/src/components/PromptForm.tsx`)
+
+### 1. Dual-Mode Forms (Create vs Edit)
+
+One component handles both creating and editing. When `prompt` is passed, `useEffect` populates the fields (edit mode). When it's null, fields start empty (create mode). The submit button text adapts: `prompt ? 'Save Changes' : 'Create Prompt'`. This avoids duplicating form UI for two nearly identical use cases.
+
+### 2. `e.preventDefault()` on Form Submit
+
+Browsers default to submitting forms via HTTP (full page reload). `e.preventDefault()` stops this, letting us handle submission in JavaScript with `fetch()`. This is required in every SPA form — without it, your React app would reload and lose all state.
+
+### 3. `type="button"` vs Default `type="submit"`
+
+Buttons inside a `<form>` default to `type="submit"`. The Cancel button uses `type="button"` to prevent accidentally submitting the form when the user wants to cancel. A subtle but important detail that causes real bugs if missed.
