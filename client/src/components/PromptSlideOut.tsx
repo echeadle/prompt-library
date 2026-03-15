@@ -64,12 +64,16 @@ export default function PromptSlideOut() {
         </button>
 
         {slideOut.mode === 'create' && (
-          <PromptForm onSubmit={handleCreate} onCancel={closeSlideOut} />
+          <PromptForm
+            prefill={slideOut.prefill}
+            onSubmit={handleCreate}
+            onCancel={closeSlideOut}
+          />
         )}
 
         {slideOut.mode === 'edit' && prompt && (
           <PromptForm
-            prompt={prompt}
+            prompt={slideOut.prefill ? { ...prompt, content: slideOut.prefill.content } : prompt}
             onSubmit={handleUpdate}
             onCancel={() => openSlideOut('view', slideOut.promptId)}
           />

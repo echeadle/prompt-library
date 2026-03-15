@@ -5,6 +5,7 @@ import type { Prompt } from '../types';
 
 interface Props {
   prompt?: Prompt | null;
+  prefill?: { content: string };
   onSubmit: (data: {
     title: string;
     content: string;
@@ -15,7 +16,7 @@ interface Props {
   onCancel: () => void;
 }
 
-export default function PromptForm({ prompt, onSubmit, onCancel }: Props) {
+export default function PromptForm({ prompt, prefill, onSubmit, onCancel }: Props) {
   const { data: categories = [] } = useCategories();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -30,8 +31,10 @@ export default function PromptForm({ prompt, onSubmit, onCancel }: Props) {
       setDescription(prompt.description ?? '');
       setCategoryId(prompt.category_id);
       setTags(prompt.tags?.map((t) => t.name) ?? []);
+    } else if (prefill) {
+      setContent(prefill.content);
     }
-  }, [prompt]);
+  }, [prompt, prefill]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
