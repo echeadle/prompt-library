@@ -53,3 +53,19 @@ Tag associations use `INSERT OR IGNORE INTO prompt_tags` instead of plain `INSER
 ### 5. Transactional Batch Operations
 
 The entire import is wrapped in `db.transaction()`. If importing 100 prompts and #50 fails, all 100 are rolled back — you won't end up with a half-imported dataset. Transactions also dramatically improve SQLite write performance for batch inserts (each individual insert would otherwise trigger a disk sync).
+
+---
+
+## Task 9: Seed Example Prompts (`server/db.ts`)
+
+### 1. Seed Data vs Test Isolation
+
+Seed data is great for production (users see example content on first run), but it breaks tests that assume an empty database. The fix: add an options parameter `{ seed?: boolean }` that defaults to `true` for production but lets tests pass `{ seed: false }`. This is a common pattern — **production defaults should be convenient, but test code needs control**.
+
+### 2. Prepared Statements Outside Loops
+
+Instead of calling `db.prepare('INSERT ...')` inside each loop iteration (which re-parses the SQL every time), we prepare statements once before the loop and reuse them. SQLite compiles SQL into bytecode — preparing once and running many times avoids redundant compilation. This is a micro-optimization that becomes significant with batch operations.
+
+### 3. Options Object Pattern for Function Parameters
+
+`createDatabase(dbPath?, { seed? })` uses the "options object" pattern: required/common params come first as positional args, optional config goes in a destructured object with defaults. This is more readable than positional booleans (what does `createDatabase(':memory:', false)` mean?) and extensible — you can add more options later without changing existing call sites.

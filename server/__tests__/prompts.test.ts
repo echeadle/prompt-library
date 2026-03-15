@@ -17,7 +17,7 @@ describe('Prompts API', () => {
   let app: express.Express;
 
   beforeEach(() => {
-    db = createDatabase(':memory:');
+    db = createDatabase(':memory:', { seed: false });
     app = createApp(db);
   });
 

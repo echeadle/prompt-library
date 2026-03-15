@@ -6,7 +6,7 @@ describe('Database', () => {
   let db: Database.Database;
 
   beforeEach(() => {
-    db = createDatabase(':memory:');
+    db = createDatabase(':memory:', { seed: false });
   });
 
   it('creates all tables', () => {

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export function createDatabase(dbPath?: string): Database.Database {
+export function createDatabase(dbPath?: string, { seed = true }: { seed?: boolean } = {}): Database.Database {
   const resolvedPath = dbPath ?? path.join(__dirname, '..', 'data', 'prompts.db');
   const db = new Database(resolvedPath);
 
@@ -71,6 +71,65 @@ export function createDatabase(dbPath?: string): Database.Database {
       }
     });
     seedMany();
+  }
+
+  // Seed example prompts if empty (skipped in tests)
+  const promptCount = db.prepare('SELECT COUNT(*) as count FROM prompts').get() as { count: number };
+  if (seed && promptCount.count === 0) {
+    const seedPrompts = [
+      {
+        title: 'Python Code Reviewer',
+        content: 'Review the following Python code for bugs, performance issues, and style.\n\nFocus on:\n- Logic errors and edge cases\n- Performance bottlenecks\n- PEP 8 compliance\n- Type hints where helpful\n\nCode:\n[paste code here]',
+        description: 'Reviews Python code for bugs, performance, and style',
+        category_id: 2, // Coding
+        tags: ['python', 'debug', 'code-review'],
+      },
+      {
+        title: 'Blog Post Outline',
+        content: 'Generate a detailed blog post outline on the topic of [TOPIC].\n\nInclude:\n- An engaging hook/introduction\n- 5-7 main sections with subpoints\n- Key takeaways\n- A compelling conclusion with CTA',
+        description: 'Creates structured blog post outlines',
+        category_id: 3, // Writing
+        tags: ['blog', 'creative', 'outline'],
+      },
+      {
+        title: 'Data Analysis Helper',
+        content: 'Analyze the following dataset and provide insights.\n\nFocus on:\n- Key trends and patterns\n- Outliers and anomalies\n- Correlations between variables\n- Actionable recommendations\n\nData:\n[paste data here]',
+        description: 'Analyzes datasets and provides actionable insights',
+        category_id: 4, // Analysis
+        tags: ['data', 'analysis', 'few-shot'],
+      },
+      {
+        title: 'Creative Image Prompt',
+        content: 'Create a detailed image generation prompt for: [CONCEPT]\n\nInclude specifics about:\n- Style (photorealistic, illustration, watercolor, etc.)\n- Lighting and mood\n- Composition and framing\n- Color palette\n- Key details and textures',
+        description: 'Generates detailed prompts for AI image generation',
+        category_id: 5, // Image Gen
+        tags: ['image', 'creative', 'midjourney'],
+      },
+    ];
+
+    const insertPrompt = db.prepare(
+      'INSERT INTO prompts (title, content, description, category_id) VALUES (?, ?, ?, ?)'
+    );
+    const insertTag = db.prepare('INSERT OR IGNORE INTO tags (name) VALUES (?)');
+    const getTag = db.prepare('SELECT id FROM tags WHERE name = ?');
+    const insertPromptTag = db.prepare('INSERT INTO prompt_tags (prompt_id, tag_id) VALUES (?, ?)');
+    const insertFts = db.prepare(
+      'INSERT INTO prompts_fts (rowid, title, content, description, tags) VALUES (?, ?, ?, ?, ?)'
+    );
+
+    const seedAll = db.transaction(() => {
+      for (const sp of seedPrompts) {
+        const result = insertPrompt.run(sp.title, sp.content, sp.description, sp.category_id);
+        const promptId = result.lastInsertRowid as number;
+        for (const tagName of sp.tags) {
+          insertTag.run(tagName);
+          const tag = getTag.get(tagName) as { id: number };
+          insertPromptTag.run(promptId, tag.id);
+        }
+        insertFts.run(promptId, sp.title, sp.content, sp.description, sp.tags.join(' '));
+      }
+    });
+    seedAll();
   }
 
   return db;
