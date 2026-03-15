@@ -169,3 +169,19 @@ The whole card is clickable (opens detail view), but the favorite star button li
 ### 5. Conditional Object Spread for Filters
 
 `...(searchQuery && { q: searchQuery })` only adds the `q` property to the filters object when `searchQuery` is truthy. This is cleaner than building the object with `if` statements and avoids sending empty filter params to the API.
+
+---
+
+## Task 16: TagComboInput (`client/src/components/TagComboInput.tsx`)
+
+### 1. `useRef` for Imperative DOM Access
+
+React is declarative (you describe what the UI should look like), but sometimes you need to imperatively tell the browser to do something — like focus an input. `useRef<HTMLInputElement>(null)` creates a stable reference to the DOM element. After adding a tag, `inputRef.current?.focus()` puts the cursor back in the input. Without `useRef`, there's no way to call `.focus()`.
+
+### 2. Focus/Blur Timing with Dropdowns
+
+This is a classic UI challenge: clicking a dropdown item triggers `onBlur` on the input (hiding the dropdown) *before* `onClick` on the button fires. Two techniques solve this: (1) `onBlur` uses `setTimeout(fn, 200)` to delay hiding, giving the click time to fire. (2) Dropdown buttons use `onMouseDown` with `e.preventDefault()` to prevent the blur from happening at all. Both are needed for reliable behavior.
+
+### 3. Controlled Component Pattern
+
+The parent owns the data via `value`/`onChange` props — TagComboInput doesn't store the tag list internally. This makes the component reusable: the parent decides what happens when tags change (e.g., updating form state). The component only manages its own transient UI state (the text input and dropdown visibility).
