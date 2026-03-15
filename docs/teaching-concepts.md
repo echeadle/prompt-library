@@ -201,3 +201,19 @@ Browsers default to submitting forms via HTTP (full page reload). `e.preventDefa
 ### 3. `type="button"` vs Default `type="submit"`
 
 Buttons inside a `<form>` default to `type="submit"`. The Cancel button uses `type="button"` to prevent accidentally submitting the form when the user wants to cancel. A subtle but important detail that causes real bugs if missed.
+
+---
+
+## Task 18: PromptView (`client/src/components/PromptView.tsx`)
+
+### 1. Clipboard API (`navigator.clipboard`)
+
+`navigator.clipboard.writeText()` is the modern way to copy text. It returns a Promise (can fail if the tab isn't focused or permissions are denied), so wrap in try/catch and show feedback with toast notifications. The old `document.execCommand('copy')` approach is deprecated.
+
+### 2. `whitespace-pre-wrap` for Multi-Line Content
+
+By default, HTML collapses all whitespace (newlines, tabs, multiple spaces) into single spaces. `whitespace-pre-wrap` preserves line breaks and whitespace while still wrapping long lines. Essential for displaying prompt content that has intentional formatting.
+
+### 3. Callback Props for Separation of Concerns
+
+PromptView doesn't handle mutations (edit, delete). It receives `onEdit` and `onDelete` callbacks and just calls them when the user acts. The parent component (PromptSlideOut, coming next) handles the actual API calls. This keeps PromptView a pure display component — easier to test and reason about.
