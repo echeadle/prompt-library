@@ -49,6 +49,11 @@ export function createDatabase(dbPath?: string, { seed = true }: { seed?: boolea
     CREATE VIRTUAL TABLE IF NOT EXISTS prompts_fts USING fts5(
       title, content, description, tags
     );
+
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
   `);
 
   // Seed categories if empty
