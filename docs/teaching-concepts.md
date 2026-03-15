@@ -253,3 +253,23 @@ Instead of showing an ugly `<input type="file">`, we create one in JavaScript, s
 ### 3. Cache Invalidation After Import
 
 After importing, we invalidate `prompts`, `categories`, and `tags` queries — because the import may have created new categories and tags. This is a good example of thinking about side effects: importing prompts doesn't just affect the prompts list, it can affect the entire sidebar.
+
+---
+
+## Tasks 21-22: Testing
+
+### 1. Testing Error Cases (400s and 404s)
+
+Good test suites don't just verify happy paths — they verify the app handles bad input correctly. Testing that `POST /api/prompts` returns 400 without a title confirms our validation works. Testing 404 for missing IDs confirms we don't crash on bad requests. These tests document the API's contract.
+
+### 2. Per-File Test Environment (`// @vitest-environment jsdom`)
+
+Vitest runs tests in Node by default (no browser APIs). React component tests need a browser-like environment (DOM, `document`, `window`). Adding `// @vitest-environment jsdom` at the top of a test file tells Vitest to use jsdom for that specific file, while backend tests stay in Node. This avoids setting up separate test configs.
+
+### 3. `renderWithProviders` Test Helper
+
+React components that use Context or React Query need to be wrapped in providers to work. The `renderWithProviders` helper wraps the component under test in `QueryClientProvider` and `AppProvider`, creating a fresh `QueryClient` with `retry: false` (so failed queries don't retry during tests). This is standard boilerplate for testing React apps.
+
+### 4. `vi.fn()` for Tracking Callbacks
+
+`vi.fn()` creates a mock function that records how it was called. After simulating user interaction (`userEvent.click`), we can assert `expect(onChange).toHaveBeenCalledWith(['debug'])` — verifying the component called the callback with the right arguments. This tests component behavior without needing a real parent.

@@ -9,5 +9,10 @@ export default defineConfig({
   },
   test: {
     globals: true,
+    setupFiles: ['client/src/__tests__/setup.ts'],
+    environmentMatchGlobs: [
+      ['client/**', 'jsdom'],
+      ['server/**', 'node'],
+    ],
   },
 });

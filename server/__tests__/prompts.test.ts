@@ -101,4 +101,36 @@ describe('Prompts API', () => {
     expect(res.body.length).toBe(1);
     expect(res.body[0].title).toBe('Python helper');
   });
+
+  it('GET /api/prompts?tag=X filters by tag', async () => {
+    await request(app).post('/api/prompts').send({ title: 'A', content: 'C', category_id: 1, tags: ['python'] });
+    await request(app).post('/api/prompts').send({ title: 'B', content: 'C', category_id: 1, tags: ['rust'] });
+    const pythonTag = db.prepare("SELECT id FROM tags WHERE name = 'python'").get() as { id: number };
+    const res = await request(app).get(`/api/prompts?tag=${pythonTag.id}`);
+    expect(res.body.length).toBe(1);
+    expect(res.body[0].title).toBe('A');
+  });
+
+  it('GET /api/prompts?sort=title&order=asc sorts by title', async () => {
+    await request(app).post('/api/prompts').send({ title: 'Zebra', content: 'C', category_id: 1, tags: [] });
+    await request(app).post('/api/prompts').send({ title: 'Apple', content: 'C', category_id: 1, tags: [] });
+    const res = await request(app).get('/api/prompts?sort=title&order=asc');
+    expect(res.body[0].title).toBe('Apple');
+    expect(res.body[1].title).toBe('Zebra');
+  });
+
+  it('POST /api/prompts returns 400 without title', async () => {
+    const res = await request(app).post('/api/prompts').send({ content: 'C', category_id: 1, tags: [] });
+    expect(res.status).toBe(400);
+  });
+
+  it('GET /api/prompts/:id returns 404 for missing prompt', async () => {
+    const res = await request(app).get('/api/prompts/999');
+    expect(res.status).toBe(404);
+  });
+
+  it('PUT /api/prompts/:id returns 404 for missing prompt', async () => {
+    const res = await request(app).put('/api/prompts/999').send({ title: 'X', content: 'Y', category_id: 1, tags: [] });
+    expect(res.status).toBe(404);
+  });
 });

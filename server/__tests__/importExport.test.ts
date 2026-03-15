@@ -62,4 +62,13 @@ describe('Import/Export API', () => {
     expect(res.body.imported).toBe(0);
     expect(res.body.skipped).toBe(1);
   });
+
+  it('POST /api/import creates new categories automatically', async () => {
+    const res = await request(app).post('/api/import').send({
+      prompts: [{ title: 'New Cat Prompt', content: 'C', category: 'BrandNewCategory', tags: [] }],
+    });
+    expect(res.body.imported).toBe(1);
+    const cat = db.prepare("SELECT * FROM categories WHERE name = 'BrandNewCategory'").get();
+    expect(cat).toBeDefined();
+  });
 });
