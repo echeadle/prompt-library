@@ -69,3 +69,19 @@ Instead of calling `db.prepare('INSERT ...')` inside each loop iteration (which 
 ### 3. Options Object Pattern for Function Parameters
 
 `createDatabase(dbPath?, { seed? })` uses the "options object" pattern: required/common params come first as positional args, optional config goes in a destructured object with defaults. This is more readable than positional booleans (what does `createDatabase(':memory:', false)` mean?) and extensible — you can add more options later without changing existing call sites.
+
+---
+
+## Task 11: API Client (`client/src/api/`)
+
+### 1. API Client Pattern
+
+Instead of calling `fetch('/api/prompts')` directly in every React component, we centralize all HTTP calls in dedicated files (`api/prompts.ts`, `api/categories.ts`, `api/tags.ts`). Benefits: if the API URL changes, you fix one file. If you need auth headers, add them in one place. Components only know "call `fetchPrompts()`", not how HTTP works.
+
+### 2. Re-exporting Types
+
+`client/src/types.ts` doesn't define types — it re-exports them from `shared/types.ts` with `export type { ... } from '...'`. This creates a clean import boundary: frontend code imports from `../types`, not `../../../shared/types`. If the shared types move or change structure, only this one re-export file needs updating.
+
+### 3. URLSearchParams for Query Strings
+
+Instead of manually building `?q=python&category=2`, we use the built-in `URLSearchParams` API. It handles encoding special characters (spaces, ampersands) correctly and only includes params that are actually set — no manual `if` chains to build the string.
