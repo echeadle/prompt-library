@@ -113,3 +113,19 @@ The app wraps everything in nested providers: `QueryClientProvider > AppProvider
 ### 5. Context with Multiple `useState` Calls
 
 `AppContext` manages 7+ pieces of state with individual `useState` calls rather than a single `useReducer`. This is fine for simple state where each piece changes independently. If the state transitions became complex (e.g., "selecting a category should also clear the search"), `useReducer` would be better — but here, simplicity wins.
+
+---
+
+## Task 13: Sidebar Component (`client/src/components/Sidebar.tsx`)
+
+### 1. Conditional Tailwind Classes with Ternaries
+
+Tailwind has no built-in "active" or "selected" variant. Instead, you use JavaScript ternaries to swap class strings: `selectedCategory === cat.id ? 'bg-indigo-100 text-indigo-800' : 'hover:bg-slate-100'`. The selected state gets highlight colors; the unselected state gets a subtle hover. This pattern repeats throughout the app.
+
+### 2. Inline `style` for Dynamic Values
+
+Category colors come from the database, so they can't be Tailwind classes (Tailwind generates classes at build time, not runtime). The colored dots use `style={{ backgroundColor: cat.color }}` instead. Rule of thumb: use Tailwind for fixed design tokens, inline styles for truly dynamic values.
+
+### 3. Toggle Selection Pattern
+
+Categories toggle: clicking the already-selected category deselects it (`cat.id === selectedCategory ? null : cat.id`). Tags use array add/remove. These are common UI patterns — single-select toggle vs multi-select toggle.
