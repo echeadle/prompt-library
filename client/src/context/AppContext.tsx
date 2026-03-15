@@ -4,6 +4,13 @@ interface SlideOutState {
   open: boolean;
   mode: 'view' | 'edit' | 'create';
   promptId?: number;
+  prefill?: { content: string };
+}
+
+interface AIModalState {
+  open: boolean;
+  mode: 'generate' | 'review';
+  promptId?: number;
 }
 
 interface AppState {
@@ -15,6 +22,7 @@ interface AppState {
   sortField: 'created_at' | 'updated_at' | 'title' | 'is_favorite';
   sortOrder: 'asc' | 'desc';
   slideOut: SlideOutState;
+  aiModal: AIModalState;
 }
 
 interface AppContextType extends AppState {
@@ -25,8 +33,10 @@ interface AppContextType extends AppState {
   setViewMode: (mode: 'grid' | 'list') => void;
   setSortField: (field: AppState['sortField']) => void;
   setSortOrder: (order: 'asc' | 'desc') => void;
-  openSlideOut: (mode: SlideOutState['mode'], promptId?: number) => void;
+  openSlideOut: (mode: SlideOutState['mode'], promptId?: number, prefill?: { content: string }) => void;
   closeSlideOut: () => void;
+  openAIModal: (mode: AIModalState['mode'], promptId?: number) => void;
+  closeAIModal: () => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -40,13 +50,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [sortField, setSortField] = useState<AppState['sortField']>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [slideOut, setSlideOut] = useState<SlideOutState>({ open: false, mode: 'view' });
+  const [aiModal, setAIModal] = useState<AIModalState>({ open: false, mode: 'generate' });
 
-  const openSlideOut = (mode: SlideOutState['mode'], promptId?: number) => {
-    setSlideOut({ open: true, mode, promptId });
+  const openSlideOut = (mode: SlideOutState['mode'], promptId?: number, prefill?: { content: string }) => {
+    setSlideOut({ open: true, mode, promptId, prefill });
   };
 
   const closeSlideOut = () => {
     setSlideOut({ open: false, mode: 'view' });
+  };
+
+  const openAIModal = (mode: AIModalState['mode'], promptId?: number) => {
+    setAIModal({ open: true, mode, promptId });
+  };
+
+  const closeAIModal = () => {
+    setAIModal({ open: false, mode: 'generate' });
   };
 
   return (
@@ -60,6 +79,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         sortField, setSortField,
         sortOrder, setSortOrder,
         slideOut, openSlideOut, closeSlideOut,
+        aiModal, openAIModal, closeAIModal,
       }}
     >
       {children}
