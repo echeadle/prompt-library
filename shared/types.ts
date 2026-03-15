@@ -43,3 +43,31 @@ export interface ImportResult {
   imported: number;
   skipped: number;
 }
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface AISettings {
+  provider: string;
+  model: string;
+  hasApiKey: boolean;
+}
+
+export interface AISettingsInput {
+  provider?: string;
+  apiKey?: string;
+  model?: string;
+}
+
+export interface AIChatRequest {
+  messages: ChatMessage[];
+  mode: 'generate' | 'review';
+  context?: {
+    prompt?: { title: string; content: string; category: string };
+    categories: string[];
+    tags: string[];
+    promptCount: number;
+  };
+}
